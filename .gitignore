@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build output
+dist/
+build/
+.turbo/
+coverage/
+
+# Environment files (local config, never committed)
+.env
+.env.*
+!.env.example
+
+# Prisma generated client
+packages/database/generated/
+
+# Logs
+logs/
+*.log
+
+# Editor / OS
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.swp
+
+# Husky
+.husky/_
+
+# Runtime directories
+uploads/
+backups/
+deployments/
+temp/
+
+# Runtime logs
+/home/logs/
+*.pid
+
+# Nginx generated configs (if generated inside repo)
+nginx/generated/
+
+# Runtime websites
+websites/
+
+# Temporary files
+tmp/
+.cache/

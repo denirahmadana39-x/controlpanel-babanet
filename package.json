@@ -1,0 +1,50 @@
+{
+  "name": "hosting-panel",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-hosted lightweight static website hosting platform",
+  "packageManager": "pnpm@11.18.0",
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "dev:api": "turbo run dev --filter=@hosting/api",
+    "dev:worker": "turbo run dev --filter=@hosting/worker",
+    "dev:admin": "turbo run dev --filter=@hosting/admin",
+    "dev:client": "turbo run dev --filter=@hosting/client",
+    "typecheck": "turbo run typecheck",
+    "lint": "turbo run lint",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "clean": "turbo run clean",
+    "setup": "node scripts/create-env.mjs",
+    "db:generate": "prisma generate",
+    "db:validate": "prisma validate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:studio": "prisma studio",
+    "prepare": "husky",
+    "test": "vitest run",
+    "verify": "node scripts/verify.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "dotenv": "^17.4.2",
+    "eslint": "^10.8.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "eslint-plugin-react-refresh": "^0.5.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.3.0",
+    "prettier": "^3.9.6",
+    "prettier-plugin-prisma": "^5.0.0",
+    "prisma": "^7.9.1",
+    "tsx": "^4.23.3",
+    "turbo": "^2.10.8",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.65.0",
+    "vitest": "^3.2.7"
+  }
+}

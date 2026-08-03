@@ -1,0 +1,9 @@
+node_modules
+dist
+.turbo
+coverage
+packages/database/generated
+pnpm-lock.yaml
+Prd.md
+.env
+.env.*

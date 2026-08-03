@@ -1,0 +1,11 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+allowBuilds:
+  "@prisma/engines": true
+  argon2: true
+  esbuild: true
+  prisma: true
+minimumReleaseAgeExclude:
+  - tsx@4.23.3
+  - jose@6.2.7

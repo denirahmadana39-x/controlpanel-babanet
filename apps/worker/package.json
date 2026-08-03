@@ -1,0 +1,35 @@
+{
+  "name": "@hosting/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsup",
+    "start": "node dist/index.js",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@hosting/database": "workspace:*",
+    "@hosting/deploy": "workspace:*",
+    "@hosting/errors": "workspace:*",
+    "@hosting/logger": "workspace:*",
+    "@hosting/nginx": "workspace:*",
+    "@hosting/shared": "workspace:*",
+    "@hosting/storage": "workspace:*",
+    "@prisma/adapter-pg": "^7.9.1",
+    "@prisma/client": "^7.9.1",
+    "adm-zip": "^0.6.0",
+    "dotenv": "^17.4.2",
+    "mime-types": "^3.0.2",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "tsup": "^8.5.1",
+    "tsx": "^4.23.3",
+    "typescript": "~5.9.3"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "@hosting/database",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsup",
+    "clean": "rm -rf dist",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src"
+  },
+  "dependencies": {
+    "@prisma/adapter-pg": "^7.9.1",
+    "@prisma/client": "^7.9.1"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "~5.9.3"
+  }
+}
