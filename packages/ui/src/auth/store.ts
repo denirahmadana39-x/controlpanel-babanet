@@ -13,9 +13,9 @@ interface AuthState {
   updateUser: (user: AuthUser) => void;
 }
 
-function applySession(data: SessionResponse): { user: AuthUser } {
+function applySession(data: SessionResponse): { user: AuthUser; status: "authenticated" } {
   setCsrfToken(data.csrfToken);
-  return { user: data.user };
+  return { user: data.user, status: "authenticated" };
 }
 
 export const useAuthStore = create<AuthState>((set) => ({

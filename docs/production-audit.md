@@ -1,5 +1,10 @@
 # Production Audit — No Fake / Mock / Dummy / Hardcoded Values
 
+Re-verified `2026-08-04` against the full source tree (every route, service,
+repository, worker, package, config, and frontend page). Zero fake/mock/dummy/
+hardcoded data paths found; the sections below were confirmed by direct code
+read (not just grep) and the full `pnpm verify` pipeline is green (67 tests).
+
 Scope: full repository search for `mock`, `fake`, `dummy`, `stub`, `sample`,
 `placeholder`, `TODO production`, `FIXME`, `XXX`, `HACK`, hardcoded
 `localhost`/IPs, hardcoded IDs/UUIDs, hardcoded JWTs/secrets, hardcoded
@@ -125,7 +130,55 @@ production paths:
    `http://localhost:3000` fallback unless `VITE_API_URL` is set at build time
    (`packages/ui/src/lib/api.ts:3`). Set per-environment in production builds.
 
-## 5. Confirmation
+## 5. Server compatibility (Ubuntu 24.04 / Proxmox CTs / systemd) — confirmed
+
+Audited against the target infrastructure (API + panels + Redis in CT100,
+PostgreSQL 16 in CT101, Cloudflare Tunnel in CT102):
+
+- **Linux / Ubuntu 24.04** — no platform-specific code; only POSIX APIs:
+  `node:fs` (`mkdirSync`/`renameSync`/`symlinkSync`/`rmSync`/`statfsSync`),
+  `node:os`, `node:child_process` (`spawn("nginx")`), `node:crypto`, streams.
+  No Docker/K8s/PM2/Windows/macOS coupling anywhere.
+- **Nginx** — real binary control: `nginx -t` validate + `nginx -s reload`
+  under a cross-process `FileLock` (PID-liveness stale takeover, 30 s timeout,
+  30 s command timeout + SIGKILL) (`packages/nginx/src/control.ts`). Uses the
+  Ubuntu layout `/etc/nginx/sites-available` + `sites-enabled` with relative
+  symlinks. Defaults live in `ENGINE_DEFAULTS` and are env-overridable.
+- **PostgreSQL 16** — Prisma 7 + `@prisma/adapter-pg` driver adapter;
+  per-project serialization via `pg_advisory_xact_lock` 64-bit key pair
+  (`packages/database/src/project-lock.ts`); seed requires env-provided
+  `ADMIN_EMAIL`/`ADMIN_PASSWORD` and fails fast otherwise.
+- **Redis — NOT used by any code.** Grep for `redis|ioredis|createClient`
+  returns zero matches. Rate limiting is in-process (`@fastify/rate-limit`),
+  the worker queue is DB-backed polling, metrics are in-process. **If CT100
+  provisions Redis it is currently unused — safe to omit, or keep for future
+  cross-instance rate limiting/outbox.** Flagging as an infra mismatch.
+- **systemd** — no `.service`/`.timer` units are committed to the repo (this is
+  a deploy-time artifact, not fake code). Runtime is systemd-friendly: no TTY,
+  no interactive prompts, `SIGINT`/`SIGTERM` handled in
+  `apps/api/src/index.ts` and the worker (`drain` up to 30 s then forced exit),
+  no orphaned child processes. Unit files must be authored during install
+  (WantedBy=multi-user.target, ExecStart=`node dist/index.js`, env from
+  `/etc/hosting-panel/.env`).
+- **Cloudflare Tunnel** — external proxy; API/panels bind `0.0.0.0` with
+  `PORT`/`HOST` env, TLS is terminated upstream (see blocker #2). All URLs are
+  env-driven (`APP_URL`/`API_URL`/`VITE_API_URL`), no hardcoded public hosts.
+
+## 6. Performance audit — confirmed
+
+- Worker: DB poll `WORKER_POLL_MS=2000`, heartbeat 30 s, stale 10 min,
+  recovery 5 min; low steady-state CPU.
+- API: global rate limit 300/min, login 5/15 min — all in-process, no extra
+  infra; monitoring frontend refetches every 15 s.
+- Uploads: streamed to disk via `pipeline` + hashing `Transform`; zip
+  extraction bounded by `MAX_ZIP_ENTRIES`/`MAX_EXTRACTED_SIZE_MB`/
+  `MAX_SINGLE_FILE_SIZE_MB` with size-mismatch + zip-bomb guards.
+- Known, documented bounds: synchronous `copyTree`/extraction briefly block the
+  worker event loop (`docs/technical-debt.md` #4) and per-entry extraction is
+  in-memory up to the single-file cap (#7). Both are acceptable at current
+  limits and queued for Phase 4, not fake/degraded behavior.
+
+## 7. Confirmation
 
 - No fake, mock, dummy, sample, placeholder, simulated-success, or hardcoded
   data path remains in production code. Every production behavior is backed by
@@ -134,8 +187,8 @@ production paths:
   instead of fabricated values.
 - Test-only fixtures are confined to `*.test.ts` files and the `verify`/`smoke`
   tooling.
-- `pnpm verify` completed green (exit 0): format, lint, typecheck,
-  `Tests (65 passed)`, build, prisma validate + migrate status, environment,
-  temp API, temp worker, health checks (database connected / worker
-  initialized / queue ready), and smoke tests incl. real nginx site serving and
-  cleanup.
+- `pnpm verify` completed green (exit 0) on `2026-08-04`: format, lint,
+  typecheck, `Tests (67 passed, 11 files)`, build, prisma validate + migrate
+  status, environment, temp API, temp worker, health checks (database
+  connected / worker initialized / queue ready), and smoke tests incl. real
+  nginx site serving and cleanup.
